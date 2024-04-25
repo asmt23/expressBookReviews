@@ -4,26 +4,31 @@ let isValid = require("./auth_users.js").isValid;
 let users = require("./auth_users.js").users;
 const public_users = express.Router();
 
+const doesUserExist = (username)=>{
+    let users_name = users.filter((user)=>{
+      return user.username === username
+    });
+    if(users_name.length > 0){
+      return true;
+    } else {
+      return false;
+    }
+  }
 
 public_users.post("/register", (req,res) => {
-
-  if (!req.body.username){
-    return res.status(403).json({message: "Please provide a username!"});
-  }
-  const us = req.body.username;
-  if (!req.body.password){
-    return res.status(403).json({message: "Please provide a password!"});
-  }
-  const pwd = req.body.password;
+    const username = req.body.username;
+    const password = req.body.password;
   
-  if (users.hasOwnProperty(us)){
-    return res.status(403).json({message: "User already exists!"});
-  }
-
-  users[us] = pwd;
-
-  return res.status(200).json({message: "User registered!"});
-});
+    if (username && password) {
+      if (!doesUserExist(username)) {
+        users.push({"username":username,"password":password});
+        return res.status(200).json({message: "User registered!"});
+      } else {
+        return res.status(403).json({message: "User already exists!"});
+      }
+    }
+    return res.status(403).json({message: "Registration failed!"});
+  });
 
 // Get the book list available in the shop
 public_users.get('/',function (req, res) {
