@@ -56,6 +56,11 @@ public_users.get('/isbn/:isbn',function (req, res) {
             res.send(JSON.stringify(book,null,4));
         }
     }
+
+    if (book == null)
+    {
+        res.status(404).json({message: "Book with this ISBN not found! Try again."});
+    }
   });    
  });
   
@@ -91,10 +96,14 @@ public_users.get('/title/:title',function (req, res) {
                book_ttl.push(book_list[key]);
             }
         }
-        return res.send(JSON.stringify({book_ttl}, null, 4));
+        if (book_ttl.length > 0)
+        {
+            res.send(JSON.stringify({book_ttl}, null, 4));
+        }
+        else {
+            res.status(404).json({message: "Book not found! Try again."});
+        }
       });
-    
-      return res.status(404).json({message: "Book not found! Try again."});
 });
 
 //  Get book review
