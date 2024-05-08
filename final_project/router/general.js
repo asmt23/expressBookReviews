@@ -30,48 +30,71 @@ public_users.post("/register", (req,res) => {
     return res.status(403).json({message: "Registration failed!"});
   });
 
+  let getBooksPromise = new Promise((resolve,reject) => {
+    let book_list = books;
+    resolve(book_list);
+    });
+
 // Get the book list available in the shop
 public_users.get('/',function (req, res) {
-  // Send all books
-  return res.send(JSON.stringify({books},null,4));
+  
+    // Send all books
+  getBooksPromise.then((book_list) => {
+    res.send(JSON.stringify({book_list},null,4));
+});
 });
 
 // Get book details based on ISBN
 public_users.get('/isbn/:isbn',function (req, res) {
   // get book based on isbn
   const isb = req.params.isbn;
-  book = null;
-    for (key in books){
+  getBooksPromise.then((book_list) => {
+    let book = null;
+    for (key in book_list){
         if (key == isb){
-            book = books[isb];
+            book = book_list[isb];
+            res.send(JSON.stringify(book,null,4));
         }
     }
-    return res.send(JSON.stringify(book,null,4));
+  });    
  });
   
 // Get book details based on author
 public_users.get('/author/:author',function (req, res) {
    // get book based on isbn
    const auth = req.params.author;
-   const book_auth = [];
-     for (key in books){
-         if (books[key].author == auth) {
-            book_auth.push(books[key]);
+   
+   getBooksPromise.then((book_list) => {
+    const book_auth = [];
+     for (key in book_list){
+         if (book_list[key].author == auth) {
+            book_auth.push(book_list[key]);
          }
      }
-     return res.send(JSON.stringify({book_auth}, null, 4));
+     if (book_auth.length > 0)
+     {
+        res.send(JSON.stringify({book_auth}, null, 4));
+     }
+     else {
+        res.status(404).json({message: "Books by this author not found! Try again."});
+     }
+  })   
 });
 
 // Get all books based on title
 public_users.get('/title/:title',function (req, res) {
     const ttl = req.params.title;
-    const book_ttl = [];
-      for (key in books){
-          if (books[key].title == ttl) {
-             book_ttl.push(books[key]);
-          }
-      }
-      return res.send(JSON.stringify({book_ttl}, null, 4));
+    getBooksPromise.then((book_list) => {
+        const book_ttl = [];
+        for (key in book_list){
+            if (book_list[key].title == ttl) {
+               book_ttl.push(book_list[key]);
+            }
+        }
+        return res.send(JSON.stringify({book_ttl}, null, 4));
+      });
+    
+      return res.status(404).json({message: "Book not found! Try again."});
 });
 
 //  Get book review
